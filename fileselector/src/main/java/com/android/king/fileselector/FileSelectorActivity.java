@@ -7,10 +7,6 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.PermissionChecker;
-import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
@@ -34,6 +30,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.PermissionChecker;
 
 
 /**
@@ -96,7 +97,7 @@ public class FileSelectorActivity extends AppCompatActivity implements View.OnCl
         layoutGuide = findViewById(R.id.layoutGuide);
         listView = findViewById(R.id.listview);
 
-        if (PermissionChecker.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager
+        if (PermissionChecker.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PermissionChecker
                 .PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 100);
             return;
@@ -107,10 +108,9 @@ public class FileSelectorActivity extends AppCompatActivity implements View.OnCl
     private void initData() {
 
         isMultiSelect = getIntent().getBooleanExtra(ACTIVITY_KEY_MULTI, false);
-        String fileType = getIntent().getStringExtra(ACTIVITY_KEY_FILE_TYPE);
+        filterList = getIntent().getStringArrayListExtra(ACTIVITY_KEY_FILE_TYPE);
         String filePath = getIntent().getStringExtra(ACTIVITY_KEY_FILEROOT);
-        maxSelect = getIntent().getIntExtra(ACTIVITY_KEY_MAX_COUNT, 3);
-        filterList = getFilterType(fileType);
+        maxSelect = getIntent().getIntExtra(ACTIVITY_KEY_MAX_COUNT, 1);
 
         if (filePath == null || filePath.trim().length() == 0) {
             currentDir = Environment.getExternalStorageDirectory();
@@ -154,30 +154,6 @@ public class FileSelectorActivity extends AppCompatActivity implements View.OnCl
             addGuideView(parent);
         }
     }
-
-    /**
-     * get file type filter
-     *
-     * @param typeStr
-     * @return
-     */
-    private List<String> getFilterType(String typeStr) {
-        if (TextUtils.isEmpty(typeStr)) {
-            return null;
-        }
-        List<String> typeList = new ArrayList<>();
-        try {
-            JSONArray array = new JSONArray(typeStr);
-
-            for (int i = 0; i < array.length(); i++) {
-                typeList.add(array.getString(i));
-            }
-        } catch (JSONException e) {
-            typeList = null;
-        }
-        return typeList;
-    }
-
 
     /**
      * get file list from @file
